@@ -73,3 +73,15 @@ spec:
     - name: http
       port: 27017 
   type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fleetman-elasticsearch
+spec:
+  selector:
+    app: elasticsearch
+  ports:
+    - name: http
+      port: 9200
+  type: NodePort
