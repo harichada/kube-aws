@@ -68,7 +68,47 @@ spec:
       resources:
         requests:
           storage: 10Gi
-    
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+   name: logstash
+spec:
+  selector:
+    matchLabels:
+       app: logstash
+  replicas:
+  template:
+      metadata:
+         labels:
+            app: logstash 
+      spec:
+         containers:
+         - name: logstash
+           image: logstash:6.8.8
+           volumeMounts:
+             - name: logstash-log
+               mountPath: /var/log/logstash
+           env:
+           - name: SPRING_PROFILES_ACTIVE
+             value: production-microservice
+         volumes:
+           - name: logstash-log
+             persistentVolumeClaim:
+                claimName: logstash-pvc    
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: logstash-pvc
+spec:
+  storageClassName: logstash-ssd
+  accessModes:
+    - ReadWriteOnce
+  resources:
+     requests:
+       storage: 10Gi
 ---
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
@@ -77,4 +117,11 @@ metadata:
 provisioner: kubernetes.io/gce-pd
 parameters:
    type: pd-standard
-
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+   name: logstash-ssd
+provisioner: kubernetes.io/gce-pd
+parameters:
+   type: pd-standard
